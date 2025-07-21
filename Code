@@ -1,0 +1,65 @@
+# Customer Churn Analysis in R
+
+# Load libraries
+library(dplyr)
+library(ggplot2)
+library(pROC)
+library(caret)
+
+# Load dataset
+data <- read.csv("WA_Fn-UseC_-Telco-Customer-Churn.csv", stringsAsFactors = TRUE)
+
+# Initial data inspection
+str(data)
+sum(is.na(data))
+
+# Remove rows with blank TotalCharges
+# Convert TotalCharges to numeric after handling blanks
+data <- data[data$TotalCharges != "", ]
+data$TotalCharges <- as.numeric(as.character(data$TotalCharges))
+
+# Convert target variable
+data$Churn <- ifelse(data$Churn == "Yes", 1, 0)
+data$Churn <- as.factor(data$Churn)
+
+# Convert SeniorCitizen to factor
+data$SeniorCitizen <- as.factor(data$SeniorCitizen)
+
+# Select relevant features
+selected_data <- data %>%
+  select(Churn, tenure, MonthlyCharges, TotalCharges, SeniorCitizen, Contract, InternetService)
+
+# Split into train and test sets
+set.seed(123)
+trainIndex <- createDataPartition(selected_data$Churn, p = 0.8, list = FALSE)
+trainData <- selected_data[trainIndex, ]
+testData <- selected_data[-trainIndex, ]
+
+# Fit logistic regression model
+model <- glm(Churn ~ ., data = trainData, family = binomial)
+summary(model)
+
+# Predict on test data
+pred_probs <- predict(model, testData, type = "response")
+pred_labels <- ifelse(pred_probs > 0.5, 1, 0)
+pred_labels <- as.factor(pred_labels)
+
+# Confusion matrix
+confusionMatrix(pred_labels, testData$Churn, positive = "1")
+
+# ROC and AUC
+roc_obj <- roc(testData$Churn, pred_probs)
+plot(roc_obj, col = "blue", main = "ROC Curve")
+auc(roc_obj)
+
+# Feature importance
+exp(coef(model))
+
+# Plot churn by contract type
+ggplot(trainData, aes(x = Contract, fill = Churn)) +
+  geom_bar(position = "fill") +
+  labs(title = "Churn Rate by Contract Type", y = "Proportion") +
+  theme_minimal()
+
+# Save model (optional)
+# saveRDS(model, "logistic_model.rds")
