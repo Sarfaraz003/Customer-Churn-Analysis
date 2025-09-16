@@ -8,6 +8,7 @@
 
 data=read.csv("C:\\Users\\molla\\Downloads\\archive (1)\\WA_Fn-UseC_-Telco-Customer-Churn.csv")
 View(data)
+head(data)
 str(data)
 dim(data)
 summary(data) #-- On an average customers have continued their service for 32.7 months  
@@ -42,7 +43,29 @@ proportion=prop.table(table(data$Contract,data$Churn))*100
 round(proportion,2)
 
 # Average tenure by churn status
-aggregate(tenure ~ Churn,data=data,mean)
+aggregate(tenure~Churn,data=data,mean)
+
+#[Alternative]:
+
+# Average tenure for churned
+avg_tenure_churn=mean(data$tenure[data$Churn=="Yes"],na.rm=TRUE)
+
+# Average tenure for non-churned
+avg_tenure_nonchurn=mean(data$tenure[data$Churn=="No"],na.rm =TRUE)
+
+avg_tenure_churn
+avg_tenure_nonchurn
+
+# 2x2 table of Churn vs Contract
+table_contract=table(data$Churn,data$Contract)
+
+# Odds ratio (M-to-M / Two-Year)
+odds_ratio=(table_contract["Yes","Month-to-month"]/table_contract["No","Month-to-month"])/(table_contract["Yes","Two year"]/table_contract["No","Two year"])
+odds_ratio
+
+# Average MonthlyCharges for churned customers
+avg_charges_churn=mean(data$MonthlyCharges[data$Churn=="Yes"],na.rm=TRUE)
+avg_charges_churn
 
 # Boxplot of MonthlyCharges by churn
 boxplot(MonthlyCharges~Churn,data=data,main="Monthly Charges vs Churn",col=c("lightblue","pink"))
