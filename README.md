@@ -11,7 +11,7 @@ Customer retention is a critical challenge for businesses, especially in subscri
 ## 🛠️ Tools & Technologies  
 - **Programming Language**: R  
 - **Techniques**: Logistic Regression, Exploratory Data Analysis (EDA), Data Visualization  
-- **Libraries**: ggplot2, caret, dplyr  
+- **Libraries**: pROC  
 
 ## 📂 Dataset  
 - **Source**: [Telco Customer Churn Dataset (Kaggle)](https://www.kaggle.com/blastchar/telco-customer-churn)  
@@ -42,16 +42,8 @@ Customer retention is a critical challenge for businesses, especially in subscri
 This project demonstrates how statistical modeling and data analysis can:  
 - **Reduce revenue loss** by targeting at-risk customers.  
 - **Enhance customer satisfaction** through tailored retention strategies.  
-- **Support leadership decisions** with evidence-based insights.  
+- **Support leadership decisions** with evidence-based insights.   
 
-## 💡 Future Enhancements  
-- Experiment with advanced models (Random Forest, XGBoost).  
-- Build a dashboard for interactive churn monitoring.  
-- Incorporate customer feedback/sentiment data for richer insights.  
 
-## 👤 About Me  
-I am a **Postgraduate in Statistics** passionate about applying data-driven approaches to solve real-world business problems. This project reflects my ability to combine **statistical knowledge, analytical thinking, and business storytelling** to deliver actionable insights.  
-
----  
 
 ✨ *If you’re a recruiter or professional viewing this project, I’d be glad to discuss how my skills can contribute to your team’s success.*
