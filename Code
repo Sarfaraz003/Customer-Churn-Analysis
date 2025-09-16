@@ -1,65 +1,81 @@
-# Customer Churn Analysis in R
+#---------- CUSTOMER CHURN ANALYSIS ----------#
 
-# Load libraries
-library(dplyr)
-library(ggplot2)
-library(pROC)
-library(caret)
+# The response variable of interest is churn, the total number of customers leaving each month
 
-# Load dataset
-data <- read.csv("WA_Fn-UseC_-Telco-Customer-Churn.csv", stringsAsFactors = TRUE)
+# Tenure - Number of months the customer has stayed with the company
 
-# Initial data inspection
+#-----{Load & Explore dataset}
+
+data=read.csv("C:\\Users\\molla\\Downloads\\archive (1)\\WA_Fn-UseC_-Telco-Customer-Churn.csv")
+View(data)
 str(data)
-sum(is.na(data))
+dim(data)
+summary(data) #-- On an average customers have continued their service for 32.7 months  
 
-# Remove rows with blank TotalCharges
-# Convert TotalCharges to numeric after handling blanks
-data <- data[data$TotalCharges != "", ]
-data$TotalCharges <- as.numeric(as.character(data$TotalCharges))
+# Check missing values
+colSums(is.na(data))
+#Basic Data Cleaning
+#Business Question: Are there missing values or duplicates that may affect analysis?
 
-# Convert target variable
-data$Churn <- ifelse(data$Churn == "Yes", 1, 0)
-data$Churn <- as.factor(data$Churn)
+# Remove duplicate rows
+data=unique(data)
 
-# Convert SeniorCitizen to factor
-data$SeniorCitizen <- as.factor(data$SeniorCitizen)
+#-----{Exploratory Data Analysis (EDA)}
 
-# Select relevant features
-selected_data <- data %>%
-  select(Churn, tenure, MonthlyCharges, TotalCharges, SeniorCitizen, Contract, InternetService)
+#Business Questions:
 
-# Split into train and test sets
-set.seed(123)
-trainIndex <- createDataPartition(selected_data$Churn, p = 0.8, list = FALSE)
-trainData <- selected_data[trainIndex, ]
-testData <- selected_data[-trainIndex, ]
+#How many customers churned?
+#What factors are related to churn (like contract type, tenure, monthly charges)?
 
-# Fit logistic regression model
-model <- glm(Churn ~ ., data = trainData, family = binomial)
+
+# Churn distribution
+table(data$Churn)
+
+# Percentage churn
+proportion = prop.table(table(data$Churn)) * 100
+round(proportion,2) 
+
+# Relationship between churn and contract type
+table(data$Contract,data$Churn)
+
+proportion=prop.table(table(data$Contract,data$Churn))*100
+round(proportion,2)
+
+# Average tenure by churn status
+aggregate(tenure ~ Churn,data=data,mean)
+
+# Boxplot of MonthlyCharges by churn
+boxplot(MonthlyCharges~Churn,data=data,main="Monthly Charges vs Churn",col=c("lightblue","pink"))
+
+
+#-----{Logistic Regression Model}
+#Business Question: Can we predict churn based on customer features?
+
+model=glm(as.factor(Churn)~tenure+Contract+MonthlyCharges,data=data,family="binomial")
 summary(model)
 
-# Predict on test data
-pred_probs <- predict(model, testData, type = "response")
-pred_labels <- ifelse(pred_probs > 0.5, 1, 0)
-pred_labels <- as.factor(pred_labels)
+# Predicted probabilities
+pred=predict(model,type="response")
+
+# Classify churn if probability > 0.5
+pred_class=ifelse(pred>0.5,"Yes","No")
+
+View(pred_class)
+View(data$Churn)
 
 # Confusion matrix
-confusionMatrix(pred_labels, testData$Churn, positive = "1")
+confusion_matrix=table(Predicted=pred_class,Actual=data$Churn)
+confusion_matrix
 
-# ROC and AUC
-roc_obj <- roc(testData$Churn, pred_probs)
-plot(roc_obj, col = "blue", main = "ROC Curve")
-auc(roc_obj)
+#Model Evaluation
+#Business Question: How good is the model?
 
-# Feature importance
-exp(coef(model))
+# Accuracy
+mean(pred_class == data$Churn)
+#(4628+917)/(4628+917+952+546) [Alternative: TP+TN/TP+TN+FP+FN]
 
-# Plot churn by contract type
-ggplot(trainData, aes(x = Contract, fill = Churn)) +
-  geom_bar(position = "fill") +
-  labs(title = "Churn Rate by Contract Type", y = "Proportion") +
-  theme_minimal()
-
-# Save model (optional)
-# saveRDS(model, "logistic_model.rds")
+# ROC curve
+library(pROC)
+roc_curve=roc(data$Churn,pred)
+plot(roc_curve,col="blue")
+auc(roc_curve)
